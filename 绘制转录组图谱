@@ -1,3 +1,6 @@
 awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' C_1_hisat.sam > first_step_C_1_hisat.sam        #输出sam文件前九列
 awk '/^V300/{print $0}' first_step_C_1_hisat.sam > second_step_C_1_hisat.sam             #将sam文件前面的信息删掉
 awk '{if($4 !=0){print $0}}' second_step_C_1_hisat.sam > third_step_C_1_hisat.sam        #将未比对上的删掉
+
+awk '/NZ_ACXX02000011.1/{print $3,$4,$5,$6}' /data/pub/youmengcheng/ymc/cleandata/second_step_C_1.sam > \
+/data/pub/youmengcheng/ymc/cleandata/C_1_NZ_ACXX02/NZ_ACXX02000011.1_finally_step_C_1.sam
