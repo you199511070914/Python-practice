@@ -4,3 +4,187 @@ awk '{if($4 !=0){print $0}}' second_step_C_1_hisat.sam > third_step_C_1_hisat.sa
 
 awk '/NZ_ACXX02000011.1/{print $3,$4,$5,$6}' /data/pub/youmengcheng/ymc/cleandata/second_step_C_1.sam > \
 /data/pub/youmengcheng/ymc/cleandata/C_1_NZ_ACXX02/NZ_ACXX02000011.1_finally_step_C_1.sam
+
+#1.将比对的sam文件分类
+import re
+import os
+import datetime
+def open_path(path,path1,number):
+    with open(path1,"w")as fp:
+        with open(path,"r")as file:
+            lines=file.readlines()
+            #print(lines)
+            for line in lines:
+                sub_line=line.split(" ")
+                symbol=sub_line[2]
+                sixth=sub_line[6]
+                if number ==symbol and sixth=="=":
+                    print(line)
+                    fp.write(line+"\n")
+    fp.close()
+def main():
+    start_time = datetime.datetime.now()
+    list_dir = os.listdir("F:/cpap转录组分析数据/rawdata/sam/")
+    for file_path in list_dir:
+        print(file_path)
+        path = "F:/cpap转录组分析数据/rawdata/sam/" + file_path
+        total_number_list=['NZ_ACXX02000031.1']
+        for number in total_number_list:
+            print(number)
+            path1="F:/cpap转录组分析数据/rawdata/first/"+number+".sam"
+            print(path1)
+            open_path(path,path1,number)
+        end_time = datetime.datetime.now()
+        print((end_time - start_time))
+if __name__ == "__main__":
+    main()
+
+#2.将sam文件中的每行信息的起始及终止位置提取出来，然后统计各个位置出现的次数
+import re
+import os
+import datetime
+from collections import Counter
+from collections import defaultdict
+def open_path(path):
+    total_list = []
+    with open(path,'r')as file:
+        token = path[29:46]
+        print(token)
+        lines=file.readlines()
+        for line in lines:
+            sub_dict={}
+            line = line.split(" ")
+            #print(line)
+            if len(line) < 8:
+                continue
+            #print(line)
+            if line[2] != token:
+                continue
+            reads_id=line[0]
+            #print(reads_id)
+            sub_dict[reads_id]=""
+            position = line[3]
+            position = int(position)
+            length = line[5]
+            if length == "*":
+                length = "0M"
+            re_length = re.findall('\d+M', length)
+            if len(re_length) == 1:
+                for a in re_length:
+                    re_sub_length = re.sub("\D", "", a)
+                    re_sub_length = int(re_sub_length)
+                    total_length = position + re_sub_length + 1
+                    position_length=str(position)+"."+str(total_length)
+                    #print(position_length)
+                    sub_dict[reads_id]=position_length
+                    total_list.append(sub_dict)
+                    #total_list.append(position_length)
+            else:
+                number = 0
+                for b in re_length:
+                    re_sub_length = re.sub("\D", "", b)
+                    re_sub_length = int(re_sub_length)
+                    #print(re_sub_length)
+                    number += re_sub_length
+                #print(number)
+                total_length = position + number + 1
+                position_length = str(position) +"."+ str(total_length)
+                sub_dict[reads_id] = position_length
+                total_list.append(sub_dict)
+                #total_list.append(position_length)
+                #total_list.append(total_length)
+    #print(total_list)
+    total_dict={}
+    for first in total_list:                 #合并列表中key相同的字典
+        for k, v in first.items():
+            total_dict.setdefault(k, []).append(v)
+    #print([{k:v} for k, v in total_dict.items()])
+    print(total_dict)
+    return total_dict
+def total_dict(total_dict):
+    sub_total_list=[]
+    for k,v in total_dict.items():
+        #print(v)
+        finally_list = []
+        for number in v:
+            #print(number)
+            sub_number=number.split(".")
+            #print(sub_number)
+            for i in sub_number:
+                #print(i)
+                i=int(i)
+                finally_list.append(i)
+        print(finally_list)
+        length_list=len(finally_list)
+        if length_list ==4:
+            max_number = finally_list[0]
+            min_number =finally_list[0]
+            for num in finally_list:
+                if num > max_number:
+                    max_number = num
+                if min_number > num:
+                    min_number = num
+            print(min_number, max_number)
+            for index in range(min_number, max_number + 1):
+                sub_total_list.append(index)
+        else:
+            for gap in range(0,length_list,4):
+                sub_list=finally_list[gap:gap+4]
+                print(sub_list)
+                max_number = sub_list[0]            #找出列表中的最大值和最小值
+                min_number = sub_list[0]
+                for num in sub_list:
+                    if num > max_number:
+                        max_number = num
+                    if min_number > num:
+                        min_number = num
+                print(min_number, max_number)
+                for index in range(min_number, max_number + 1):
+                    sub_total_list.append(index)
+    print(sub_total_list)
+    return sub_total_list
+def count_reads(sub_total_list):
+    print(sub_total_list)
+    max_value = sub_total_list[0]
+    for index in range(1, len(sub_total_list)):
+        if sub_total_list[index] > max_value:
+            max_value = sub_total_list[index]
+        else:
+            continue
+    print(max_value)
+    for d in range(max_value):
+        sub_total_list.append(d)
+    list_count = Counter(sub_total_list)  # 统计列表中元素出现的次数方法一
+    sort_list = sorted(list_count.items(), key=lambda list_count: list_count[0])  # 对key排序
+    print(sort_list)
+    return sort_list
+def write_txt(path1,sort_list):
+    txt_path=path1+".txt"
+    with open(txt_path, 'w')as file:
+        for i in sort_list:
+            #print(i[0],i[1])
+            k = i[0]
+            file.write(str(k) + "\t")
+            v = i[1]
+            file.write(str(v) + "\n")
+    file.close()
+def main():
+    start_time = datetime.datetime.now()
+    list_dir = os.listdir("F:/cpap转录组分析数据/rawdata/first/")
+    #list_dir=os.listdir("/data/pub/youmengcheng/ymc/cleandata/C_12_NZ_ACXX02/")
+    for file_path in list_dir:
+        print(file_path)
+        path = "F:/cpap转录组分析数据/rawdata/first/" + file_path
+        #path = "/data/pub/youmengcheng/ymc/cleandata/C_12_NZ_ACXX02/" + file_path
+        path1 = "F:/cpap转录组分析数据/rawdata/second/" + file_path
+        #path1 = "/data/pub/youmengcheng/ymc/cleandata/C_12_NZ_ACXX/" + file_path   #token=path[52:69]
+        first=open_path(path)
+        second=total_dict(first)
+        third=count_reads(second)
+        #second=total_list(first)
+        #third=count_reads(second)
+        write_txt(path1,third)
+        end_time = datetime.datetime.now()
+        print((end_time - start_time))
+if __name__=="__main__":
+    main()
