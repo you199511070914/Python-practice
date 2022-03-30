@@ -11,7 +11,7 @@ awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' cel_1.sam > first_step_cel_1.sam
 #将sam文件前面的信息删掉
 awk '/^A00601/{print $0}' first_step_cel_1.sam > second_step_cel_1.sam
 #提取出含有ctg35字符串的行，并将未比对上的删掉
-awk '/ctg35/{if($4 !=0 && $9 !=0){print $0}}' third_step_cel_1.sam > ctg35_finally_step_cel_1.sam
+awk '/ctg35/{if($4 !=0 && $9 !=0){print $0}}' second_step_cel_1.sam > ctg35_finally_step_cel_1.sam
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #提取出含有ctg35字符串的行，将3，4，5，6列写入文件
