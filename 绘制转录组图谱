@@ -5,12 +5,19 @@ awk '{if($4 !=0){print $0}}' second_step_C_1_hisat.sam > third_step_C_1_hisat.sa
 awk '/NZ_ACXX02000011.1/{print $3,$4,$5,$6}' /data/pub/youmengcheng/ymc/cleandata/second_step_C_1.sam > \
 /data/pub/youmengcheng/ymc/cleandata/C_1_NZ_ACXX02/NZ_ACXX02000011.1_finally_step_C_1.sam
 
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#输出sam文件前九列
 awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' cel_1.sam > first_step_cel_1.sam
+#将sam文件前面的信息删掉
 awk '/^A00601/{print $0}' first_step_cel_1.sam > second_step_cel_1.sam
-awk '{if($4 !=0){print $0}}' second_step_cel_1.sam > third_step_cel_1.sam
-awk '/ctg35/{print $3,$4,$5,$6}' /data/pub/youmengcheng/ymc/cpap_rna-seq/clean_data/third_step_cel_1.sam > ctg35_finally_step_cel_1.sam
-sed -n '/ctg35/p' ctg35_finally_step_cel_1.sam > ctg35.sam       #提取出含有ctg35字符串的行
-sed -n '/ctg35/p' third_step_cel_1.sam > ctg35.sam       #提取出含有ctg35字符串的行
+#提取出含有ctg35字符串的行，并将未比对上的删掉
+awk '/ctg35/{if($4 !=0 && $9 !=0){print $0}}' third_step_cel_1.sam > ctg35_finally_step_cel_1.sam
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+#提取出含有ctg35字符串的行，将3，4，5，6列写入文件
+awk '/ctg35/{if($4 !=0 && $9 !=0){print $3,$4,$5,$6}' /data/pub/youmengcheng/ymc/cpap_rna-seq/clean_data/third_step_cel_1.sam > ctg35_finally_step_cel_1.sam
+#提取出含有ctg35字符串的行
+sed -n '/ctg35/p' ctg35_finally_step_cel_1.sam > ctg35.sam
 
 
 
